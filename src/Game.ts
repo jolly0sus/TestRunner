@@ -76,6 +76,7 @@ export class Game {
       resolution: Math.min(window.devicePixelRatio || 1, 2),
       autoDensity: true,
       powerPreference: 'high-performance',
+      roundPixels: true,
     });
     mount.appendChild(this.app.canvas);
 

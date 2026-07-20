@@ -41,6 +41,17 @@ export class Background extends Container {
     this.buildBushes();
   }
 
+  /**
+   * Adjacent tiles touch edge-to-edge in theory, but sub-pixel rounding of
+   * scaled sprite quads can leave a gap that shows the stage's clear color as
+   * a seam — most visible in wide (landscape) viewports where a single tile
+   * spans most of the screen, and more pronounced on some mobile GPUs than in
+   * desktop testing. Stretching each tile well beyond its slot so neighbors
+   * overlap generously hides that gap regardless of device-specific rounding;
+   * the overlap is tiny relative to tileW (thousands of px) so it's invisible.
+   */
+  private readonly TILE_OVERLAP = 24;
+
   private buildTiledBackground(): void {
     const t = tex('bg');
     this.bgScale = Math.max(stage.width / t.width, DESIGN.HEIGHT / t.height);
@@ -53,12 +64,25 @@ export class Background extends Container {
       const sprite = new Sprite(t);
       sprite.anchor.set(0, 0);
       sprite.y = y;
-      sprite.scale.set(mirrored ? -this.bgScale : this.bgScale, this.bgScale);
       sprite.zIndex = LAYERS.FAR_BACKGROUND;
-      const slotLeft = i * this.tileW;
-      sprite.x = mirrored ? slotLeft + this.tileW : slotLeft;
       this.addChild(sprite);
-      this.tiles.push({ sprite, mirrored, slotLeft });
+      const slotLeft = i * this.tileW;
+      const tile: Tile = { sprite, mirrored, slotLeft };
+      this.tiles.push(tile);
+      this.placeTile(tile);
+    }
+  }
+
+  /** Position + scale a tile's sprite from its logical slotLeft, with overlap. */
+  private placeTile(t: Tile): void {
+    const span = this.tileW + this.TILE_OVERLAP * 2;
+    const scale = (span / this.tileW) * this.bgScale;
+    if (t.mirrored) {
+      t.sprite.scale.set(-scale, this.bgScale);
+      t.sprite.x = t.slotLeft + this.tileW + this.TILE_OVERLAP;
+    } else {
+      t.sprite.scale.set(scale, this.bgScale);
+      t.sprite.x = t.slotLeft - this.TILE_OVERLAP;
     }
   }
 
@@ -134,7 +158,7 @@ export class Background extends Container {
     for (const t of this.tiles) {
       t.slotLeft -= r;
       if (t.slotLeft < -this.tileW) t.slotLeft += total;
-      t.sprite.x = t.mirrored ? t.slotLeft + this.tileW : t.slotLeft;
+      this.placeTile(t);
     }
 
     this.recycle(this.lamps, r);
