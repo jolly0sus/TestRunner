@@ -1,0 +1,33 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - iframe [ref=e7]:
+      - generic [ref=f1e1]: Playoff
+  - contentinfo [ref=e8]:
+    - generic [ref=e9] [cursor=pointer]:
+      - combobox "Device" [ref=e10]:
+        - option "Samsung Galaxy S23 Ultra"
+        - option "Samsung Galaxy S23"
+        - option "Google Pixel 8"
+        - option "Google Pixel 7"
+        - option "iPhone 15 Pro Max" [selected]
+        - option "iPhone 15"
+        - option "iPhone 14"
+        - option "iPhone SE"
+        - option "iPad Mini"
+        - option "iPad Pro 11\""
+      - generic: ▾
+    - button "Orientation" [ref=e11] [cursor=pointer]:
+      - generic [ref=e12]: ▯
+      - generic [ref=e13]: Portrait
+    - button "Toggle frame" [ref=e14] [cursor=pointer]: 👁
+    - button "Sound" [ref=e15] [cursor=pointer]: 🔇
+    - button "Reload" [ref=e16] [cursor=pointer]: ⟳
+    - button "QR" [active] [ref=e17] [cursor=pointer]: ▦
+    - generic [ref=e18]: 430 × 932
+  - generic [ref=e20]:
+    - button "Close" [ref=e21] [cursor=pointer]: ✕
+    - heading "Open on your phone" [level=3] [ref=e22]
+    - img "QR code" [ref=e23]
+    - link "http://192.168.0.26:5174/" [ref=e24] [cursor=pointer]:
+      - /url: http://192.168.0.26:5174/
+    - paragraph [ref=e25]: Scan with your phone's camera (same Wi-Fi network).
