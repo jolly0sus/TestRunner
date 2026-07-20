@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Playbox — device preview</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <!--PLAYBOX_CONFIG-->
+</head>
+<body>
+  <main id="stage">
+    <!-- Simulated device -->
+    <div id="device" class="device" data-camera="punch">
+      <div class="bezel">
+        <div class="camera"></div>
+        <div class="screen">
+          <iframe id="frame" title="playable" allow="autoplay; fullscreen"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups"></iframe>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom toolbar -->
+  <footer id="toolbar">
+    <div class="control device-select">
+      <select id="deviceSelect" aria-label="Device"></select>
+      <span class="caret">▾</span>
+    </div>
+
+    <button class="control" id="orientationBtn" aria-label="Orientation">
+      <span class="ico" id="orientationIco">▭</span>
+      <span id="orientationLabel">Portrait</span>
+    </button>
+
+    <button class="control icon" id="cleanBtn" title="Toggle frame" aria-label="Toggle frame">👁</button>
+    <button class="control icon" id="muteBtn" title="Sound" aria-label="Sound">🔊</button>
+    <button class="control icon" id="reloadBtn" title="Reload" aria-label="Reload">⟳</button>
+    <button class="control icon" id="qrBtn" title="Open on device (QR)" aria-label="QR">▦</button>
+
+    <div class="res" id="resLabel"></div>
+  </footer>
+
+  <!-- QR popover -->
+  <div id="qrModal" class="qr-modal" hidden>
+    <div class="qr-card">
+      <button class="qr-close" id="qrClose" aria-label="Close">✕</button>
+      <h3>Open on your phone</h3>
+      <img id="qrImg" alt="QR code" width="240" height="240" />
+      <a id="qrLink" class="qr-link" target="_blank" rel="noreferrer"></a>
+      <p class="qr-hint">Scan with your phone's camera (same Wi-Fi network).</p>
+    </div>
+  </div>
+
+  <script src="/devices.js"></script>
+  <script src="/playbox.js"></script>
+</body>
+</html>

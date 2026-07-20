@@ -1,0 +1,30 @@
+{
+  "name": "@plbx/playbox",
+  "version": "0.1.0",
+  "description": "Device-mockup preview harness for playable ads — wraps any dev URL in a simulated phone frame with device presets, orientation toggle, sound, reload and a QR for on-device testing.",
+  "type": "module",
+  "bin": {
+    "playbox": "bin/playbox.mjs"
+  },
+  "files": [
+    "bin",
+    "public"
+  ],
+  "scripts": {
+    "start": "node bin/playbox.mjs"
+  },
+  "keywords": [
+    "playable",
+    "playable-ads",
+    "preview",
+    "device-mockup",
+    "simulator",
+    "pixijs"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  }
+}

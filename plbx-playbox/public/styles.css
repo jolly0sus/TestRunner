@@ -1,0 +1,177 @@
+:root {
+  --bg: #0b0b0f;
+  --panel: #1b1b22;
+  --panel-hover: #26262f;
+  --border: #34343f;
+  --text: #e8e8ee;
+  --muted: #9a9aa8;
+  --accent: #7c5cff;
+  --bezel: #101014;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------- stage */
+#stage {
+  position: fixed;
+  inset: 0 0 84px 0;              /* leave room for the toolbar */
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.device {
+  transform-origin: center center; /* JS sets --scale to fit the viewport */
+  transform: scale(var(--scale, 1));
+  transition: transform .18s ease;
+}
+
+.bezel {
+  position: relative;
+  background: var(--bezel);
+  border-radius: 44px;
+  padding: 14px;
+  box-shadow:
+    0 0 0 2px #000,
+    0 30px 80px rgba(0, 0, 0, .6),
+    inset 0 0 0 1px #2a2a32;
+}
+
+.screen {
+  position: relative;
+  overflow: hidden;
+  border-radius: 32px;
+  background: #000;
+  /* width/height are set inline by JS to the device's logical size */
+}
+
+#frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+}
+
+/* camera / notch */
+.camera {
+  position: absolute;
+  z-index: 2;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #000;
+  border: 2px solid #000;
+  box-shadow: inset 0 0 0 2px #23232b;
+}
+.device[data-camera="punch"] .camera { width: 11px; height: 11px; border-radius: 50%; top: 22px; }
+.device[data-camera="notch"] .camera { width: 150px; height: 22px; border-radius: 0 0 16px 16px; top: 14px; }
+.device[data-camera="island"] .camera { width: 92px; height: 26px; border-radius: 16px; top: 20px; }
+.device[data-camera="none"] .camera { display: none; }
+
+/* clean mode: strip the bezel entirely */
+.device.clean .bezel { background: transparent; padding: 0; box-shadow: none; }
+.device.clean .bezel { border-radius: 0; }
+.device.clean .screen { border-radius: 0; }
+.device.clean .camera { display: none; }
+
+/* ---------------------------------------------------------------- toolbar */
+#toolbar {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: rgba(22, 22, 28, .92);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .5);
+  max-width: calc(100vw - 24px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .12s ease, border-color .12s ease;
+}
+.control:hover { background: var(--panel-hover); }
+.control.icon { padding: 0; width: 40px; justify-content: center; font-size: 17px; }
+.control.active { border-color: var(--accent); color: #fff; }
+
+.device-select { position: relative; padding-right: 30px; }
+.device-select select {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  max-width: 220px;
+}
+.device-select .caret { position: absolute; right: 12px; pointer-events: none; color: var(--muted); }
+.device-select option { background: var(--panel); color: var(--text); }
+
+.res {
+  min-width: 78px;
+  text-align: center;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  padding: 0 6px;
+}
+
+/* ---------------------------------------------------------------- QR modal */
+.qr-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, .6);
+  z-index: 50;
+}
+.qr-modal[hidden] { display: none; }
+.qr-card {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 26px 26px 20px;
+  text-align: center;
+  width: 300px;
+}
+.qr-card h3 { margin: 0 0 16px; font-size: 16px; font-weight: 600; }
+.qr-card img { background: #fff; border-radius: 10px; padding: 8px; display: block; margin: 0 auto; }
+.qr-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 30px; height: 30px; border-radius: 8px;
+  background: transparent; color: var(--muted); border: 0; cursor: pointer; font-size: 15px;
+}
+.qr-close:hover { background: var(--panel-hover); color: var(--text); }
+.qr-link { display: block; margin-top: 14px; color: var(--accent); font-size: 13px; word-break: break-all; text-decoration: none; }
+.qr-link:hover { text-decoration: underline; }
+.qr-hint { color: var(--muted); font-size: 12px; margin: 10px 0 0; }
