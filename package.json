@@ -1,0 +1,21 @@
+{
+  "name": "playoff-runner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "2D endless-runner playable (PixiJS) — recreation of the Playoff/JustPlay runner reference.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173"
+  },
+  "dependencies": {
+    "howler": "^2.2.4",
+    "pixi.js": "^8.6.6"
+  },
+  "devDependencies": {
+    "@types/howler": "^2.2.12",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}

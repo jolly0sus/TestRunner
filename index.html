@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Playoff Runner</title>
+    <style>
+      @font-face {
+        font-family: 'GameFont';
+        src: url('./assets/font.ttf') format('truetype');
+        font-weight: normal;
+        font-display: block;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #1a1030;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior: none;
+      }
+
+      #app {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #app canvas {
+        display: block;
+      }
+
+      /* Preload the font by rendering an invisible probe. */
+      #font-probe {
+        position: absolute;
+        left: -9999px;
+        font-family: 'GameFont';
+        font-size: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <span id="font-probe" aria-hidden="true">Playoff</span>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
