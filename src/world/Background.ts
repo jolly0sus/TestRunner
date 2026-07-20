@@ -1,7 +1,7 @@
 import { Container, Sprite } from 'pixi.js';
 import { DESIGN, LAMP_SPACING, LAYERS, SCREEN_BUFFER } from '../config';
 import { tex, type AssetKey } from '../core/assets';
-import { stage } from '../core/stage';
+import { MAX_WIDTH, stage } from '../core/stage';
 import { randRange } from '../core/util';
 
 interface Tile {
@@ -57,7 +57,15 @@ export class Background extends Container {
     this.bgScale = Math.max(stage.width / t.width, DESIGN.HEIGHT / t.height);
     this.tileW = t.width * this.bgScale;
     const y = (DESIGN.HEIGHT - t.height * this.bgScale) / 2;
-    const count = Math.ceil((stage.width * 2) / this.tileW) + 2;
+
+    // On wide viewports (aspect beyond MAX_WIDTH's), Viewport height-bounds the
+    // scale and letterboxes the design stage, so the visible screen extends
+    // past [0, stage.width] on both sides. Starting the first tile at -MAX_WIDTH
+    // (instead of 0) guarantees that margin is covered from the first frame,
+    // rather than leaving a gap that only closes once scrolling catches up —
+    // most visible right after Game.start()/an orientation change in landscape.
+    const span = stage.width + MAX_WIDTH * 2;
+    const count = Math.ceil(span / this.tileW) + 2;
 
     for (let i = 0; i < count; i++) {
       const mirrored = i % 2 === 1;
@@ -66,7 +74,7 @@ export class Background extends Container {
       sprite.y = y;
       sprite.zIndex = LAYERS.FAR_BACKGROUND;
       this.addChild(sprite);
-      const slotLeft = i * this.tileW;
+      const slotLeft = i * this.tileW - MAX_WIDTH;
       const tile: Tile = { sprite, mirrored, slotLeft };
       this.tiles.push(tile);
       this.placeTile(tile);
