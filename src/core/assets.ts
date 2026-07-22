@@ -11,7 +11,6 @@ export const ASSET_URLS = {
   bush2: 'assets/bush2.png',
   bush3: 'assets/bush3.png',
   lamp: 'assets/lamp.png',
-  finish: 'assets/finish.png',
   hand: 'assets/hand.png',
   fail: 'assets/fail.png',
   glow: 'assets/glow.png',
@@ -35,8 +34,8 @@ export type AssetKey = keyof typeof ASSET_URLS;
 /** Background music + one-shot sound effects (loaded by Howler separately). */
 export const AUDIO_URLS = {
   music: 'assets/audio/audio_8.mp3',
-  jump: 'assets/audio/audio_4.mp3',
-  coin: 'assets/audio/audio.mp3',
+  jump: 'assets/audio/audio.mp3',
+  coin: 'assets/audio/audio_4.mp3',
   hurt: 'assets/audio/audio_3.mp3',
   win: 'assets/audio/audio_6.mp3',
   lose: 'assets/audio/audio_7.mp3',

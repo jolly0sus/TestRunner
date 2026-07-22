@@ -1,140 +1,120 @@
-import { Container, Graphics, Sprite } from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import { DESIGN, PLAYER } from '../config';
-import { tex } from '../core/assets';
-import { stage } from '../core/stage';
 
-const STRIPE_HEIGHT = 46;
-
-// Two metal cylindrical posts standing right at the crossing point (local
-// x = 0 of this container): one at the near (closer-to-viewer) corner, one
-// at the far corner, so the runner passes both posts at the same instant.
+const POST_WIDTH = 16;
 const POST_HEIGHT = 130;
-const POST_RADIUS = 10;
+const POST_COLOR = 0xcbbfa6;
+const POST_SHADE = 0x9c8f74;
+const POST_CAP_COLOR = 0x4a4238;
 
-const METAL_BASE = 0xc9ced6;
-const METAL_SHADOW = 0x8f96a1;
-const METAL_DARK = 0x767d89;
-const METAL_HIGHLIGHT = 0xffffff;
+const TAPE_COLOR = 0xf4c430;
+const TAPE_EDGE = 0xb8860b;
+const TAPE_THICKNESS = 16;
 
-// Red tape strung between the two posts, near their tops.
-const TAPE_COLOR = 0xe4362b;
-const TAPE_EDGE = 0xa62319;
-const TAPE_THICKNESS = 7;
-const TAPE_DROP_ANGLE = 2.35; // radians each half swings open on break
+const CHECKER_SIZE = 38;
+/** How far right + up the far post sits relative to the near one, giving the
+ * gate its diagonal tilt (matching the reference's angled tape + stripe). */
+const DIAGONAL_OFFSET_X = 100;
+const DIAGONAL_RISE = 130;
 
 /**
- * Finish line: two cylindrical metal posts (near + far corner, same x) with
- * a red tape strung between them near the top. The runner crosses at the
- * posts' x — that moment snaps the tape (it swings open, pinned at each
- * post) — and from there a checkered stripe is laid down on the ground,
- * growing under her feet until the run fully stops.
+ * Finish line: a checkered stripe laid across the lane as a sheared
+ * parallelogram — its top and bottom edges stay horizontal, while its left
+ * (and right) edge runs from the near post's base up to the far post's base,
+ * matching the reference's "flag seen face-on" look. A gold rope is strung
+ * between the two post tops; crossing snaps it.
  */
 export class FinishLine extends Container {
   private readonly groundY = DESIGN.HEIGHT - PLAYER.GROUND_Y;
-  private readonly stripeY = this.groundY - 55;
-  private readonly half = STRIPE_HEIGHT / 2;
-  private readonly nearY = this.stripeY + this.half;
-  private readonly farY = this.stripeY - this.half;
-  private readonly tapeAttachOffset = POST_HEIGHT - 18;
+  private readonly nearY = this.groundY - 20;
+  private readonly farY = this.nearY - DIAGONAL_RISE;
 
-  private stripe!: Sprite;
-  private tapeNear!: Graphics;
-  private tapeFar!: Graphics;
+  private stripe!: Graphics;
+  private tape!: Graphics;
   private broken = false;
   private breakAnim = 0;
 
   init(): void {
-    // Checkered ground stripe — hidden until the tape breaks, then grows
-    // from the posts (local x = 0) out to wherever the runner currently is.
-    this.stripe = new Sprite(tex('finish'));
-    this.stripe.anchor.set(0, 0.5);
-    this.stripe.x = 0;
-    this.stripe.y = this.stripeY;
-    this.stripe.height = STRIPE_HEIGHT;
-    this.stripe.width = 0;
-    this.stripe.visible = false;
+    const nearPostTop = this.nearY - POST_HEIGHT;
+    const farPostTop = this.farY - POST_HEIGHT * 0.8;
+
+    // Checkered ground stripe, painted on the road from the start (matching
+    // the reference: it's there before the tape is even crossed) — a sheared
+    // parallelogram whose bottom-left corner sits at the near post's base and
+    // whose top-left corner sits at the far post's base, stretched a bit
+    // further right past the gate rather than stopping right at it.
+    const stripeLength = DIAGONAL_OFFSET_X + 260;
+    this.stripe = new Graphics();
+    this.drawChecker(this.stripe, stripeLength);
+    this.stripe.y = this.nearY;
     this.addChild(this.stripe);
 
-    this.addChild(this.makeCylinderPost(this.nearY));
-    this.addChild(this.makeCylinderPost(this.farY));
+    this.addChild(this.makePost(0, this.nearY, POST_HEIGHT));
+    this.addChild(this.makePost(DIAGONAL_OFFSET_X, this.farY, POST_HEIGHT * 0.8));
 
-    const nearAttachY = this.nearY - this.tapeAttachOffset;
-    const farAttachY = this.farY - this.tapeAttachOffset;
-    const midY = (nearAttachY + farAttachY) / 2;
-
-    // Pinned at the near post (local origin = attach point); free end
-    // reaches up to the midpoint until it snaps.
-    this.tapeNear = new Graphics()
-      .roundRect(
-        -TAPE_THICKNESS / 2,
-        midY - nearAttachY,
-        TAPE_THICKNESS,
-        nearAttachY - midY,
-        TAPE_THICKNESS / 2,
-      )
-      .fill(TAPE_COLOR)
-      .stroke({ width: 1.5, color: TAPE_EDGE });
-    this.tapeNear.x = 0;
-    this.tapeNear.y = nearAttachY;
-    this.addChild(this.tapeNear);
-
-    // Pinned at the far post; free end reaches down to the midpoint.
-    this.tapeFar = new Graphics()
-      .roundRect(-TAPE_THICKNESS / 2, 0, TAPE_THICKNESS, midY - farAttachY, TAPE_THICKNESS / 2)
-      .fill(TAPE_COLOR)
-      .stroke({ width: 1.5, color: TAPE_EDGE });
-    this.tapeFar.x = 0;
-    this.tapeFar.y = farAttachY;
-    this.addChild(this.tapeFar);
+    // Gold tape strung between the two post tops.
+    this.tape = new Graphics()
+      .moveTo(0, nearPostTop)
+      .lineTo(DIAGONAL_OFFSET_X, farPostTop)
+      .stroke({ width: TAPE_THICKNESS, color: TAPE_COLOR, cap: 'round' })
+      .moveTo(0, nearPostTop)
+      .lineTo(DIAGONAL_OFFSET_X, farPostTop)
+      .stroke({ width: 3, color: TAPE_EDGE, alpha: 0.6, cap: 'round' });
+    this.addChild(this.tape);
   }
 
-  /** A chrome-look cylindrical post: rounded body + shaded bands + elliptical
-   * caps, so it reads as a round metal tube rather than a flat rectangle. */
-  private makeCylinderPost(y: number): Container {
+  /**
+   * Fill a Graphics with an alternating black/white checkerboard sheared into
+   * a parallelogram: local (0, 0) is the bottom-left corner (the near post's
+   * base) and local (DIAGONAL_OFFSET_X, -DIAGONAL_RISE) is the top-left
+   * corner (the far post's base). Each row is offset horizontally so the top
+   * and bottom edges stay perfectly horizontal while the left/right edges
+   * follow the near→far post line.
+   */
+  private drawChecker(g: Graphics, length: number): void {
+    const rows = Math.max(1, Math.round(DIAGONAL_RISE / CHECKER_SIZE));
+    const rowHeight = DIAGONAL_RISE / rows;
+    const cols = Math.ceil(length / CHECKER_SIZE) + 1;
+    for (let r = 0; r < rows; r++) {
+      const yBottom = -r * rowHeight;
+      const yTop = -(r + 1) * rowHeight;
+      const shearBottom = (DIAGONAL_OFFSET_X * r) / rows;
+      const shearTop = (DIAGONAL_OFFSET_X * (r + 1)) / rows;
+      for (let c = 0; c < cols; c++) {
+        const dark = (r + c) % 2 === 0;
+        g.poly([
+          shearBottom + c * CHECKER_SIZE,
+          yBottom,
+          shearBottom + (c + 1) * CHECKER_SIZE,
+          yBottom,
+          shearTop + (c + 1) * CHECKER_SIZE,
+          yTop,
+          shearTop + c * CHECKER_SIZE,
+          yTop,
+        ]).fill(dark ? 0x1a1a1a : 0xf5f5f5);
+      }
+    }
+  }
+
+  private makePost(x: number, groundY: number, height: number): Container {
     const post = new Container();
-    const r = POST_RADIUS;
-
     const shadow = new Graphics()
-      .ellipse(0, 0, r + 4, 4)
-      .fill({ color: 0x000000, alpha: 0.22 });
-
+      .ellipse(0, 0, POST_WIDTH * 0.9, POST_WIDTH * 0.35)
+      .fill({ color: 0x000000, alpha: 0.2 });
     const body = new Graphics()
-      .roundRect(-r, -POST_HEIGHT, r * 2, POST_HEIGHT, r)
-      .fill(METAL_BASE);
-    const darkBand = new Graphics()
-      .roundRect(r * 0.35, -POST_HEIGHT, r * 0.65, POST_HEIGHT, r * 0.5)
-      .fill({ color: METAL_DARK, alpha: 0.8 });
-    const shadeBand = new Graphics()
-      .roundRect(-r, -POST_HEIGHT, r * 0.5, POST_HEIGHT, r * 0.5)
-      .fill({ color: METAL_SHADOW, alpha: 0.45 });
-    const highlight = new Graphics()
-      .roundRect(-r * 0.25, -POST_HEIGHT + 6, r * 0.4, POST_HEIGHT - 12, r * 0.2)
-      .fill({ color: METAL_HIGHLIGHT, alpha: 0.75 });
-    const outline = new Graphics()
-      .roundRect(-r, -POST_HEIGHT, r * 2, POST_HEIGHT, r)
-      .stroke({ width: 2, color: METAL_SHADOW, alpha: 0.9 });
-
-    const capTop = new Graphics()
-      .ellipse(0, -POST_HEIGHT, r + 1, r * 0.55)
-      .fill(0xe4e8ee)
-      .stroke({ width: 1.5, color: METAL_SHADOW });
-    const capShine = new Graphics()
-      .ellipse(-r * 0.25, -POST_HEIGHT - r * 0.1, r * 0.4, r * 0.2)
-      .fill({ color: METAL_HIGHLIGHT, alpha: 0.85 });
-
-    post.addChild(shadow, body, shadeBand, darkBand, highlight, outline, capTop, capShine);
-    post.x = 0;
-    post.y = y;
+      .roundRect(-POST_WIDTH / 2, -height, POST_WIDTH, height, POST_WIDTH / 3)
+      .fill(POST_COLOR)
+      .stroke({ width: 2, color: POST_SHADE, alpha: 0.6 });
+    const cap = new Graphics()
+      .roundRect(-POST_WIDTH / 2 - 2, -height - 10, POST_WIDTH + 4, 12, 4)
+      .fill(POST_CAP_COLOR);
+    post.addChild(shadow, body, cap);
+    post.x = x;
+    post.y = groundY;
     return post;
   }
 
-  /** World x of the posts / tape — the run begins decelerating once the
-   * player reaches this point. */
-  get tapeBreakX(): number {
-    return this.x;
-  }
-
-  /** Snap the tape: both halves swing open from their post pins. */
+  /** Snap the tape and reveal the checkered stripe underfoot. */
   breakTape(): void {
     this.broken = true;
   }
@@ -143,20 +123,10 @@ export class FinishLine extends Container {
     this.x -= (worldSpeed * dtMs) / 1000;
 
     if (this.broken && this.breakAnim < 1) {
-      this.breakAnim = Math.min(this.breakAnim + dtMs / 350, 1);
+      this.breakAnim = Math.min(this.breakAnim + dtMs / 300, 1);
       const ease = 1 - (1 - this.breakAnim) * (1 - this.breakAnim);
-      const angle = TAPE_DROP_ANGLE * ease;
-      this.tapeNear.rotation = angle;
-      this.tapeFar.rotation = -angle;
-    }
-
-    // Grow the checkered stripe from the posts out to the runner's current
-    // position (converted into this container's local space), so it reads
-    // as the ground she has already covered since crossing the tape.
-    const localPlayerX = stage.width * PLAYER.X_POSITION - this.x;
-    if (localPlayerX > 0) {
-      this.stripe.visible = true;
-      this.stripe.width = localPlayerX;
+      this.tape.alpha = 1 - ease;
+      this.tape.y = ease * 40;
     }
   }
 }

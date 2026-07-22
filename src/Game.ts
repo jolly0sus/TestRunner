@@ -1,5 +1,6 @@
 import { Application, Container, Rectangle } from 'pixi.js';
 import {
+  COURSE_LENGTH,
   GameState,
   LAYERS,
   PLAYER,
@@ -151,10 +152,8 @@ export class Game {
         this.resumeFromTutorial();
         break;
       case GameState.Running:
-        // Jump stays available right up until the finish tape is crossed
-        // (deceleration). Gating on the finish merely *spawning* would disable
-        // jumping too early — the finish spawns far off-screen (a big lead in
-        // landscape), before the last cone even arrives.
+        // Jump stays available right up until the course ends and the world
+        // starts decelerating.
         if (this.jumpingEnabled && this.player.isOnGround && !this.decelerating) {
           this.player.jump();
           this.audio.play('jump');
@@ -292,11 +291,7 @@ export class Game {
     if (this.autoJump) this.autoPlayJump();
     this.checkTutorialTrigger();
 
-    if (
-      this.finishLine &&
-      !this.decelerating &&
-      this.finishLine.tapeBreakX <= this.player.x
-    ) {
+    if (!this.decelerating && this.distanceTraveled >= COURSE_LENGTH) {
       this.startDeceleration();
     }
 

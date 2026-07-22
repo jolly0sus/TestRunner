@@ -32,9 +32,9 @@ Requires Node 18+.
    prompt; tapping resumes and auto-jumps the lesson.
 4. **Course** — a fixed layout of collectibles, cones (with `!` warnings),
    rival runners (which chase faster than the world) and money arcs.
-5. **Finish** — reaching the checkered gate snaps the tape, the world
-   decelerates to a stop and the **win** card appears (confetti + balance +
-   CTA). Losing all 3 hearts shows the **FAIL** card.
+5. **Finish** — crossing the checkered tape (once travel reaches the end of
+   the course) decelerates the world to a stop and the **win** card appears
+   (confetti + balance + CTA). Losing all 3 hearts shows the **FAIL** card.
 
 Tunable constants (speeds, jump arc, spawn layout, rewards, hitboxes) live in
 [`src/config.ts`](src/config.ts).
@@ -56,7 +56,7 @@ src/
     Enemy.ts            mirrored rival runner, chase speed
     Obstacle.ts         traffic cone + pulsing glow + "!" warning
     Collectible.ts      floating dollar / PayPal pickup, bob + pulse
-    FinishLine.ts       checkered gate with a breakable tape
+    FinishLine.ts       diagonal checkered stripe + posts + breakaway tape
   world/
     Background.ts       seamless mirror-tiled scenery + recycled props
     Spawner.ts          distance-driven course walker
@@ -111,7 +111,6 @@ rather than gravity, matching the reference's crisp feel.
 | Trees / bushes / lamp (decor) | `tree1/2`, `bush1/2/3`, `lamp` |
 | Obstacle (cone + glow) | `cone.webp`, `cone_glow.webp` |
 | Collectibles | `dollar.png`, `paypal_logo.webp` |
-| Finish stripe | `finish.png` |
 | Tutorial hand | `hand.png` |
 | Lose badge | `fail.png` |
 | End-card branding | `banner.webp`, `paypal_card.webp` |

@@ -45,12 +45,14 @@ export class Background extends Container {
    * Adjacent tiles touch edge-to-edge in theory, but sub-pixel rounding of
    * scaled sprite quads can leave a gap that shows the stage's clear color as
    * a seam — most visible in wide (landscape) viewports where a single tile
-   * spans most of the screen, and more pronounced on some mobile GPUs than in
-   * desktop testing. Stretching each tile well beyond its slot so neighbors
-   * overlap generously hides that gap regardless of device-specific rounding;
-   * the overlap is tiny relative to tileW (thousands of px) so it's invisible.
+   * spans most of the screen, and more pronounced on some mobile GPUs/engines
+   * than in desktop testing (WebKit in particular showed a much bigger gap at
+   * each tile recycle than Chromium did, well past a 24px margin). Stretching
+   * each tile well beyond its slot so neighbors overlap generously hides that
+   * gap regardless of device/engine-specific rounding; the overlap is still
+   * tiny relative to tileW (thousands of px) so it's invisible.
    */
-  private readonly TILE_OVERLAP = 24;
+  private readonly TILE_OVERLAP = 200;
 
   private buildTiledBackground(): void {
     const t = tex('bg');
@@ -65,7 +67,14 @@ export class Background extends Container {
     // rather than leaving a gap that only closes once scrolling catches up —
     // most visible right after Game.start()/an orientation change in landscape.
     const span = stage.width + MAX_WIDTH * 2;
-    const count = Math.ceil(span / this.tileW) + 2;
+    let count = Math.ceil(span / this.tileW) + 2;
+    // Tiles alternate mirrored/non-mirrored by index so adjacent edges always
+    // tile seamlessly. That alternation only closes cleanly at the wrap-around
+    // (last tile's recycled position butting up against the first) when the
+    // tile count is even — an odd count puts two non-mirrored (or two
+    // mirrored) tiles back to back once per lap, which shows up as a visible
+    // seam in the road/scenery partway through a long run.
+    if (count % 2 !== 0) count += 1;
 
     for (let i = 0; i < count; i++) {
       const mirrored = i % 2 === 1;

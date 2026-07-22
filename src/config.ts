@@ -54,7 +54,7 @@ export const WORLD = {
   GROUND_PARALLAX: 1,
   /** Slowest far background layer relative to ground. */
   BG_PARALLAX: 0.12,
-  /** How fast the world sheds speed once the finish tape is broken. */
+  /** How fast the world sheds speed once the course ends. */
   DECELERATION_RATE: 0.965,
   /** Below this speed the world is considered stopped. */
   MIN_SPEED: 40,
@@ -119,6 +119,9 @@ export const TUTORIAL = {
 /** One design-width of travel equals one "distance" unit in the pattern. */
 export const DISTANCE_UNIT = DESIGN.WIDTH;
 
+/** Total course length — the run decelerates to a stop once travel reaches this. */
+export const COURSE_LENGTH = 19 * DISTANCE_UNIT;
+
 /** Horizontal spacing between repeating near-props (lamps). */
 export const LAMP_SPACING = 900;
 export const SCREEN_BUFFER = 400;
@@ -140,7 +143,7 @@ export interface SpawnDef {
 /**
  * The full course layout, ordered by distance. Collectibles are arranged in
  * gentle arcs (via yOffset) between the enemies and obstacles the player must
- * jump. The run ends at the finish line.
+ * jump. The run ends once travel reaches COURSE_LENGTH.
  */
 export const COURSE: SpawnDef[] = [
   // Warm-up collectibles.
